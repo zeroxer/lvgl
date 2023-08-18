@@ -75,6 +75,18 @@
 /*========================
  * RENDERING CONFIGURATION
  *========================*/
+/* Select a draw buffer implementation. Possible values:
+ * - LV_DRAW_BUF_BASIC:     LVGL's built in implementation
+ * - LV_DRAW_BUF_CUSTOM:    Implement teh function of lv_draw_buf.h externally
+ */
+#define LV_USE_DRAW_BUF    LV_DRAW_BUF_BASIC
+
+#if LV_USE_DRAW_BUF == LV_DRAW_BUF_BASIC
+    /*Align the stride of all layers and images to this bytes*/
+    #define LV_DRAW_BUF_STRIDE_ALIGN                1          /*Multiple of these Bytes*/
+    /*Align the start address of draw_buf addresses to this bytes*/
+    #define LV_DRAW_BUF_ALIGN                       4
+#endif
 
 /*Align the stride of all layers and images to this bytes*/
 #define LV_DRAW_BUF_STRIDE_ALIGN                1
@@ -89,7 +101,7 @@
 #if LV_USE_DRAW_SW == 1
     /* Set the number of draw unit.
      * > 1 requires an operating system enabled in `LV_USE_OS`
-     * > 1 means multply threads will render the screen in parallel */
+     * > 1 means multiply threads will render the screen in parallel */
     #define LV_DRAW_SW_DRAW_UNIT_CNT    1
 
     /* If a widget has `style_opa < 255` (not `bg_opa`, `text_opa` etc) or not NORMAL blend mode
@@ -256,7 +268,11 @@
 
 /* Adjust color mix functions rounding. GPUs might calculate color mix (blending) differently.
  * 0: round down, 64: round up from x.75, 128: round up from half, 192: round up from x.25, 254: round up */
-#define lv_color_mix_ROUND_OFS 0
+#define LV_COLOR_MIX_ROUND_OFS 0
+
+
+/* Add 2 x 32 bit variables to each lv_obj_t to speed up getting style properties */
+#define  LV_OBJ_STYLE_CACHE 1
 
 /*=====================
  *  COMPILER SETTINGS

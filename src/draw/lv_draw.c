@@ -145,13 +145,13 @@ bool lv_draw_dispatch_layer(struct _lv_disp_t * disp, lv_layer_t * layer)
                 lv_draw_img_dsc_t * draw_img_dsc = t->draw_dsc;
                 lv_layer_t * layer_drawn = (lv_layer_t *)draw_img_dsc->src;
 
-                if(layer_drawn->draw_buf.buf) {
+                if(lv_draw_buf_get_buf(&layer_drawn->draw_buf)) {
                     uint32_t layer_size_byte = layer_drawn->draw_buf.height * lv_draw_buf_width_to_stride(layer_drawn->draw_buf.width,
                                                                                                           layer_drawn->draw_buf.color_format);
 
                     _draw_cache.used_memory_for_layers_kb -= layer_size_byte < 1024 ? 1 : layer_size_byte >> 10;
                     LV_LOG_INFO("Layer memory used: %d kB\n", _draw_cache.used_memory_for_layers_kb);
-                    lv_free(layer_drawn->draw_buf.buf);
+                    lv_draw_buf_free(&layer_drawn->draw_buf);
                 }
 
                 /*Remove the layer from  the display's*/
@@ -324,6 +324,7 @@ void lv_draw_add_used_layer_size(uint32_t kb)
     _draw_cache.used_memory_for_layers_kb += kb;
     LV_LOG_INFO("Layer memory used: %d kB\n", _draw_cache.used_memory_for_layers_kb);
 }
+
 
 /**********************
  *   STATIC FUNCTIONS

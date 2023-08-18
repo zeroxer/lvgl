@@ -1,13 +1,17 @@
 /**
- * @file lv_draw_buf.c
+ * @file lv_draw_buf_basic.c
  *
  */
 
 /*********************
  *      INCLUDES
  *********************/
+#include "../../misc/lv_types.h"
 #include "lv_draw_buf.h"
+#if LV_USE_DRAW_BUF == LV_DRAW_BUF_BASIC
+
 #include "../../stdlib/lv_string.h"
+
 
 /*********************
  *      DEFINES
@@ -58,16 +62,28 @@ void lv_draw_buf_realloc(lv_draw_buf_t  * draw_buf, lv_coord_t w, lv_coord_t h,
     draw_buf->buf = buf_alloc(draw_buf->buf, lv_draw_buf_get_stride(draw_buf), h);
 }
 
-void lv_draw_buf_free(lv_draw_buf_t  * draw_buf)
+void lv_draw_buf_free(lv_draw_buf_t * draw_buf)
 {
     lv_free(draw_buf->buf);
-    lv_free(draw_buf);
+}
+
+void * lv_draw_buf_get_buf(lv_draw_buf_t * draw_buf)
+{
+    uint8_t * buf = draw_buf->buf;
+    buf += LV_DRAW_BUF_ALIGN - 1;
+    buf = (uint8_t *)((lv_uintptr_t) buf & ~(LV_DRAW_BUF_ALIGN - 1));
+    return buf;
 }
 
 void lv_draw_buf_invalidate_cache(lv_draw_buf_t  * draw_buf)
 {
     LV_UNUSED(draw_buf);
+}
 
+uint32_t lv_draw_buf_width_to_stride(uint32_t w, lv_color_format_t color_format)
+{
+    uint32_t width_byte =  w * lv_color_format_get_size(color_format);
+    return (width_byte + LV_DRAW_BUF_STRIDE_ALIGN - 1) & ~(LV_DRAW_BUF_STRIDE_ALIGN - 1);
 }
 
 uint32_t lv_draw_buf_get_stride(const lv_draw_buf_t * draw_buf)
@@ -79,19 +95,20 @@ void * lv_draw_buf_go_to_xy(lv_draw_buf_t * draw_buf, lv_coord_t x, lv_coord_t y
 {
     uint32_t px_size = lv_color_format_get_size(draw_buf->color_format);
     uint32_t stride = lv_draw_buf_get_stride(draw_buf);
-    uint8_t * buf_tmp = draw_buf->buf;
+    uint8_t * buf_tmp = lv_draw_buf_get_buf(draw_buf);
     buf_tmp += stride * y;
     buf_tmp += x * px_size;
 
     return buf_tmp;
 }
 
-
 void lv_draw_buf_clear(lv_draw_buf_t * draw_buf, const lv_area_t * a)
 {
+    //TODO clear the area
     LV_UNUSED(a);
     uint32_t stride = lv_draw_buf_get_stride(draw_buf);
-    lv_memzero(draw_buf->buf, stride * draw_buf->height);
+    uint8_t * buf = lv_draw_buf_get_buf(draw_buf);
+    lv_memzero(buf, stride * draw_buf->height);
 }
 
 void lv_draw_buf_copy(void * dest_buf, uint32_t dest_stride, const lv_area_t * dest_area,
@@ -129,7 +146,8 @@ static uint8_t * buf_alloc(void * old_buf, lv_coord_t w, lv_coord_t h)
     if(old_buf) buf = lv_realloc(old_buf, s);
     else  buf = lv_malloc(s);
 
-    buf += LV_DRAW_BUF_ALIGN - 1;
-    buf = (uint8_t *)((lv_uintptr_t) buf & ~(LV_DRAW_BUF_ALIGN - 1));
     return buf;
 }
+
+
+#endif /*LV_USE DRAW_BUF == LV_DRAW_BUF_BASIC*/

@@ -185,6 +185,40 @@
 /*========================
  * RENDERING CONFIGURATION
  *========================*/
+/* Select a draw buffer implementation. Possible values:
+ * - LV_DRAW_BUF_BASIC:     LVGL's built in implementation
+ * - LV_DRAW_BUF_CUSTOM:    Implement teh function of lv_draw_buf.h externally
+ */
+#ifndef LV_USE_DRAW_BUF
+    #ifdef CONFIG_LV_USE_DRAW_BUF
+        #define LV_USE_DRAW_BUF CONFIG_LV_USE_DRAW_BUF
+    #else
+        #define LV_USE_DRAW_BUF    LV_DRAW_BUF_BASIC
+    #endif
+#endif
+
+#if LV_USE_DRAW_BUF == LV_DRAW_BUF_BASIC
+    /*Align the stride of all layers and images to this bytes*/
+    #ifndef LV_DRAW_BUF_STRIDE_ALIGN
+        #ifdef _LV_KCONFIG_PRESENT
+            #ifdef CONFIG_LV_DRAW_BUF_STRIDE_ALIGN
+                #define LV_DRAW_BUF_STRIDE_ALIGN CONFIG_LV_DRAW_BUF_STRIDE_ALIGN
+            #else
+                #define LV_DRAW_BUF_STRIDE_ALIGN 0
+            #endif
+        #else
+            #define LV_DRAW_BUF_STRIDE_ALIGN                1          /*Multiple of these Bytes*/
+        #endif
+    #endif
+    /*Align the start address of draw_buf addresses to this bytes*/
+    #ifndef LV_DRAW_BUF_ALIGN
+        #ifdef CONFIG_LV_DRAW_BUF_ALIGN
+            #define LV_DRAW_BUF_ALIGN CONFIG_LV_DRAW_BUF_ALIGN
+        #else
+            #define LV_DRAW_BUF_ALIGN                       4
+        #endif
+    #endif
+#endif
 
 /*Align the stride of all layers and images to this bytes*/
 #ifndef LV_DRAW_BUF_STRIDE_ALIGN
@@ -231,7 +265,7 @@
 #if LV_USE_DRAW_SW == 1
     /* Set the number of draw unit.
      * > 1 requires an operating system enabled in `LV_USE_OS`
-     * > 1 means multply threads will render the screen in parallel */
+     * > 1 means multiply threads will render the screen in parallel */
     #ifndef LV_DRAW_SW_DRAW_UNIT_CNT
         #ifdef _LV_KCONFIG_PRESENT
             #ifdef CONFIG_LV_DRAW_SW_DRAW_UNIT_CNT
@@ -694,11 +728,25 @@
 
 /* Adjust color mix functions rounding. GPUs might calculate color mix (blending) differently.
  * 0: round down, 64: round up from x.75, 128: round up from half, 192: round up from x.25, 254: round up */
-#ifndef lv_color_mix_ROUND_OFS
+#ifndef LV_COLOR_MIX_ROUND_OFS
     #ifdef CONFIG_LV_COLOR_MIX_ROUND_OFS
-        #define lv_color_mix_ROUND_OFS CONFIG_LV_COLOR_MIX_ROUND_OFS
+        #define LV_COLOR_MIX_ROUND_OFS CONFIG_LV_COLOR_MIX_ROUND_OFS
     #else
-        #define lv_color_mix_ROUND_OFS 0
+        #define LV_COLOR_MIX_ROUND_OFS 0
+    #endif
+#endif
+
+
+/* Add 2 x 32 bit variables to each lv_obj_t to speed up getting style properties */
+#ifndef LV_OBJ_STYLE_CACHE
+    #ifdef _LV_KCONFIG_PRESENT
+        #ifdef CONFIG_LV_OBJ_STYLE_CACHE
+            #define LV_OBJ_STYLE_CACHE CONFIG_LV_OBJ_STYLE_CACHE
+        #else
+            #define LV_OBJ_STYLE_CACHE 0
+        #endif
+    #else
+        #define  LV_OBJ_STYLE_CACHE 1
     #endif
 #endif
 
